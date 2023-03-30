@@ -71,7 +71,7 @@ type clientStream struct {
 	// although this is not a concern
 	// as the affected fields (pr and pw) are already thread-safe.
 	doErr error
-	// This channel is closed when the HTTP connection is established
+	// This channel is closed when the [http.Client.Do] is returned
 	done chan struct{}
 }
 
@@ -95,7 +95,6 @@ func NewClientStream(clt *http.Client, url string) (res io.ReadWriteCloser, err 
 			// Without closing, the program will block on the write method.
 			// This is the third major bug in development.
 			s.pw.Close()
-			return
 		}
 
 		s.resp = resp
@@ -106,10 +105,10 @@ func NewClientStream(clt *http.Client, url string) (res io.ReadWriteCloser, err 
 }
 
 func (cs *clientStream) Read(p []byte) (n int, err error) {
+	<-cs.done
 	if err := cs.doErr; err != nil {
 		return 0, err
 	}
-	<-cs.done
 	return cs.resp.Body.Read(p)
 }
 
