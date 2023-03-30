@@ -60,11 +60,13 @@ func (s *Server) Start() (err error) {
 	}()
 	go func() {
 		for _, addr := range s.conf.Nodes {
-			if err := s.initNode(addr); err != nil {
+			if err := s.dialAndAddNode(addr); err != nil {
 				s.l.Error(err, "init node", "addr", addr)
 			}
 		}
 	}()
+
+	go s.debugNodes()
 
 	select {
 	case <-s.stop:
@@ -96,6 +98,15 @@ func (s *Server) delNode(n *Node) {
 	s.nodes.Delete(n.GetID())
 }
 
+
+func (s *Server) GetNodes() (res []*Node) {
+	s.nodes.Range(func(k, va any) bool {
+		res = append(res, va.(*Node))
+		return false
+	})
+	return
+}
+
 /// Connection
 
 // handleConn handles the incoming connection.
@@ -119,7 +130,9 @@ func (s *Server) handleConn(conn net.Conn) {
 	s.delNode(n)
 }
 
-func (s *Server) initNode(addr string) error {
+/// Others
+
+func (s *Server) dialAndAddNode(addr string) error {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("dial: %w", err)
@@ -144,4 +157,21 @@ func (s *Server) initNode(addr string) error {
 
 	go n.loopHeartbeat()
 	return nil
+}
+
+func (s *Server) debugNodes() {
+	d := time.Duration(s.conf.Log.DebugNodes)
+	if d == 0 {
+		return
+	}
+	for {
+		select {
+		case <-s.stop:
+			return
+		default:
+			time.Sleep(d * time.Millisecond)
+			nodes := s.GetNodes()
+			s.l.V(6).Info("nodes info", "count", len(nodes), "list", nodes)
+		}
+	}
 }

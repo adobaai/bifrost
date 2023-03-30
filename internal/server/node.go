@@ -50,6 +50,11 @@ func (n *Node) GetID() string {
 	return n.Addr()
 }
 
+func (n *Node) String() string {
+	return fmt.Sprintf("{Lantency:%s,lastHeartbeat:%s}",
+		n.latency.Round(time.Millisecond), n.lastHeartbeat.Format(time.RFC3339))
+}
+
 // Done returns a channel that's closed when the node is offline.
 // This naming convention is derived from the [context.Context] interface.
 func (n *Node) Done() <-chan struct{} {

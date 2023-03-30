@@ -14,7 +14,8 @@ type Config struct {
 }
 
 type Log struct {
-	Level int
+	Level      int
+	DebugNodes int // Duration in milliseconds, skip if zero
 }
 
 func (c *Config) SecretArray() *[32]byte {
