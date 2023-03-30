@@ -1,0 +1,10 @@
+[server]
+addr = '127.0.0.1:4078'
+# 32 bytes secret
+secret = 'WWQWCFeXk5QS1UzN2cmMlg0a0V2VzpNW'
+nodes = ['peer.address:4079']
+
+[log]
+level = 9
+# Duration in milliseconds, skip if zero
+debugNodes = 2000

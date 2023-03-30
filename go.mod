@@ -6,6 +6,7 @@ require (
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/stdr v1.2.2
 	github.com/nknorg/encrypted-stream v1.0.1
+	github.com/pelletier/go-toml/v2 v2.0.7
 	github.com/sourcegraph/conc v0.2.0
 	go.uber.org/multierr v1.10.0
 	golang.org/x/net v0.8.0

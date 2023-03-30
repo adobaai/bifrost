@@ -7,14 +7,16 @@ import (
 )
 
 func TestConfig(t *testing.T) {
-	conf := Config{
+	s := Server{
 		Addr:   "localhost:8909",
-		Secret: []byte("hello"),
+		Secret: "hello",
 	}
-	assert.PanicsWithValue(
-		t, "invalid secret length",
-		func() {
-			conf.SecretArray()
-		},
-	)
+	assert.Panics(t, func() {
+		s.SecretArray()
+	})
+
+	s.Secret = "abcdefghijklmnopqrstuvwxyz1234567890"
+	assert.NotPanics(t, func() {
+		_ = (*[32]byte)([]byte(s.Secret))
+	})
 }

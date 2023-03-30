@@ -32,7 +32,7 @@ func New(conf *config.Config, l logr.Logger) *Server {
 }
 
 func (s *Server) Start() (err error) {
-	lis, err := net.Listen("tcp", s.conf.Addr)
+	lis, err := net.Listen("tcp", s.conf.Server.Addr)
 	if err != nil {
 		return fmt.Errorf("listen: %w", err)
 	}
@@ -59,7 +59,7 @@ func (s *Server) Start() (err error) {
 		}
 	}()
 	go func() {
-		for _, addr := range s.conf.Nodes {
+		for _, addr := range s.conf.Server.Nodes {
 			if err := s.dialAndAddNode(addr); err != nil {
 				s.l.Error(err, "init node", "addr", addr)
 			}
@@ -112,7 +112,7 @@ func (s *Server) GetNodes() (res []*Node) {
 // handleConn handles the incoming connection.
 func (s *Server) handleConn(conn net.Conn) {
 	l := s.l.WithValues("addr", conn.RemoteAddr())
-	enConn, err := bnet.NewEncryptedConn(conn, s.conf.SecretArray(), false)
+	enConn, err := bnet.NewEncryptedConn(conn, s.conf.Server.SecretArray(), false)
 	if err != nil {
 		l.Error(err, "new encrypted conn")
 		return
@@ -138,7 +138,7 @@ func (s *Server) dialAndAddNode(addr string) error {
 		return fmt.Errorf("dial: %w", err)
 	}
 
-	conn, err = bnet.NewEncryptedConn(conn, s.conf.SecretArray(), true)
+	conn, err = bnet.NewEncryptedConn(conn, s.conf.Server.SecretArray(), true)
 	if err != nil {
 		return fmt.Errorf("new encrypted conn: %w", err)
 	}

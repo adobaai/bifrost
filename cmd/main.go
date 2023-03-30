@@ -20,7 +20,7 @@ func main() {
 
 func run() error {
 	l := stdr.New(log.Default())
-	conf, err := config.LoadFile("config.json")
+	conf, err := config.LoadFile("config.toml")
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
