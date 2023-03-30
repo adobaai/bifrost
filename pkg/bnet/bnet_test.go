@@ -2,8 +2,6 @@ package bnet_test
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"net"
 	"testing"
 
@@ -60,4 +58,24 @@ func TestVarintFramer(t *testing.T) {
 	bsr, err = s.ReadFrame()
 	require.NoError(t, err)
 	assert.Equal(t, []byte("xyz"), bsr)
+}
+
+func TestSeqFramer(t *testing.T) {
+	buf := bytes.Buffer{}
+	f := bnet.NewVarintFramer(&buf)
+	sf := bnet.NewSeqFramer(f)
+	sf.WriteFrameSeq([]byte("hello"), "write1")
+	require.NoError(t, sf.GetError())
+
+	sf.WriteFrameSeq([]byte("hello2"), "write2")
+	require.NoError(t, sf.GetError())
+
+	sf.CheckFrameSeq([]byte("hello"), "check1")
+	require.NoError(t, sf.GetError())
+
+	sf.CheckFrameSeq([]byte("hello"), "check2")
+	require.EqualError(t, sf.GetError(), "check2: not equal")
+
+	sf.WriteFrameSeq([]byte("ok"), "write3")
+	require.EqualError(t, sf.GetError(), "check2: not equal")
 }
