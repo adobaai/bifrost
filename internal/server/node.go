@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -37,7 +38,7 @@ func NewNodeFromConn(conn net.Conn, l logr.Logger) *Node {
 	return &Node{
 		conn:    conn,
 		httpClt: hstream.NewHTTP2ClientFromConn(conn),
-		l:       l.WithName("node"),
+		l:       l.WithName("node").WithValues("addr", conn.RemoteAddr()),
 		stop:    make(chan struct{}),
 	}
 }
@@ -61,8 +62,8 @@ func (n *Node) Done() <-chan struct{} {
 	return n.stop
 }
 
-func (n *Node) newStream(path string) (io.ReadWriteCloser, error) {
-	return hstream.NewClientStream(n.httpClt, "http:///"+path)
+func (n *Node) newStream(ctx context.Context, path string) (io.ReadWriteCloser, error) {
+	return hstream.NewClientStream(ctx, n.httpClt, "http:///"+path)
 }
 
 /// Handle
@@ -125,7 +126,9 @@ func (n *Node) reqHeartbeat() (err error) {
 	n.l.V(8).Info("req heartbeat")
 	defer n.l.V(8).Info("req heartbeat done")
 
-	s, err := n.newStream(pathHeartbeat)
+	ctx, cancel := context.WithTimeout(context.Background(), 9*time.Second)
+	defer cancel()
+	s, err := n.newStream(ctx, pathHeartbeat)
 	if err != nil {
 		return fmt.Errorf("new stream: %w", err)
 	}

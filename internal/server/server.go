@@ -61,7 +61,7 @@ func (s *Server) Start() (err error) {
 	go func() {
 		for _, addr := range s.conf.Server.Nodes {
 			if err := s.dialAndAddNode(addr); err != nil {
-				s.l.Error(err, "init node", "addr", addr)
+				s.l.Error(err, "dial and add node", "addr", addr)
 			}
 		}
 	}()

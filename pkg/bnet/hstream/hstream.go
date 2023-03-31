@@ -2,6 +2,7 @@
 package hstream
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -76,14 +77,15 @@ type clientStream struct {
 }
 
 // NewClientStream constructs an [io.ReadWriteCloser] to the specified URL.
-func NewClientStream(clt *http.Client, url string) (res io.ReadWriteCloser, err error) {
+func NewClientStream(ctx context.Context, clt *http.Client, url string,
+) (res io.ReadWriteCloser, err error) {
 	pr, pw := io.Pipe()
 	s := clientStream{
 		pr:   pr,
 		pw:   pw,
 		done: make(chan struct{}),
 	}
-	req, err := http.NewRequest("POST", url, pr)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, pr)
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}

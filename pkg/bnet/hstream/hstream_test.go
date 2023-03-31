@@ -1,6 +1,7 @@
 package hstream_test
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"testing"
@@ -49,7 +50,7 @@ func TestStream(t *testing.T) {
 	conn, err := net.Dial("tcp", lis.Addr().String())
 	require.NoError(t, err)
 	clt := hstream.NewHTTP2ClientFromConn(conn)
-	cs, err := hstream.NewClientStream(clt, "http://yes.com")
+	cs, err := hstream.NewClientStream(context.Background(), clt, "http://yes.com")
 	require.NoError(t, err)
 	n, err := cs.Write([]byte("hello"))
 	require.NoError(t, err)
